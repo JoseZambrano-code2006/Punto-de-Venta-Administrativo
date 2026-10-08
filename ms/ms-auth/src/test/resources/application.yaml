@@ -1,0 +1,8 @@
+spring:
+  config:
+    import: "optional:configserver:http://localhost:7777"
+  cloud:
+    config:
+      enabled: false
+    discovery:
+      enabled: false

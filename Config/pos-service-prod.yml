@@ -1,0 +1,7 @@
+db:
+  url: jdbc:postgresql://localhost:5433/pos-inventory
+  username: pos-service
+  password: admin123
+  maximum-pool-size: 5
+  connection-timeout: 20000
+  

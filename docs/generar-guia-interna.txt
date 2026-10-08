@@ -1,0 +1,622 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Script para generar la guia interna de componentes del sistema POS SERVICE.
+Ejecutar: python generar-guia-interna.txt
+Salida:   POS-Guia-Interna-Componentes.pdf (en la misma carpeta docs/)
+Requisito: pip install fpdf2
+"""
+
+from pathlib import Path
+
+from fpdf import FPDF
+
+OUTPUT_NAME = "POS-Guia-Interna-Componentes.pdf"
+
+
+class PosPdf(FPDF):
+    def __init__(self):
+        super().__init__()
+        self.doc_title = "POS SERVICE - Guia Interna de Componentes"
+        self.set_auto_page_break(auto=True, margin=20)
+
+    def header(self):
+        if self.page_no() == 1:
+            return
+        self.set_font("Helvetica", "I", 8)
+        self.set_text_color(100, 100, 100)
+        self.cell(0, 8, self.doc_title, align="C", new_x="LMARGIN", new_y="NEXT")
+        self.line(10, self.get_y(), 200, self.get_y())
+        self.ln(4)
+
+    def footer(self):
+        self.set_y(-15)
+        self.set_font("Helvetica", "I", 8)
+        self.set_text_color(120, 120, 120)
+        self.cell(0, 10, f"Pagina {self.page_no()}/{{nb}}", align="C")
+
+    def cover_page(self, title, subtitle, version):
+        self.add_page()
+        self.ln(45)
+        self.set_font("Helvetica", "B", 22)
+        self.set_text_color(30, 60, 120)
+        self.multi_cell(0, 12, title, align="C")
+        self.ln(8)
+        self.set_font("Helvetica", "", 13)
+        self.set_text_color(60, 60, 60)
+        self.multi_cell(0, 8, subtitle, align="C")
+        self.ln(16)
+        self.set_font("Helvetica", "I", 11)
+        self.cell(0, 8, version, align="C", new_x="LMARGIN", new_y="NEXT")
+        self.ln(24)
+        self.set_font("Helvetica", "", 10)
+        self.set_text_color(80, 80, 80)
+        self.multi_cell(
+            0,
+            6,
+            "Guia tecnica para aprendizaje personal: arquitectura interna, componentes, "
+            "flujos de datos y patrones de diseno del repositorio POS SERVICE.",
+            align="C",
+        )
+
+    def chapter_title(self, number, title):
+        self.add_page()
+        self.set_font("Helvetica", "B", 15)
+        self.set_text_color(30, 60, 120)
+        self.cell(0, 10, f"{number}. {title}", new_x="LMARGIN", new_y="NEXT")
+        self.ln(2)
+        self.set_draw_color(30, 60, 120)
+        self.line(10, self.get_y(), 200, self.get_y())
+        self.ln(6)
+
+    def section_title(self, title):
+        self.ln(3)
+        self.set_font("Helvetica", "B", 11)
+        self.set_text_color(40, 40, 40)
+        self.cell(0, 8, title, new_x="LMARGIN", new_y="NEXT")
+        self.ln(2)
+
+    def body(self, text):
+        self.set_font("Helvetica", "", 9)
+        self.set_text_color(30, 30, 30)
+        self.multi_cell(0, 5.5, text)
+        self.ln(2)
+
+    def code_block(self, text):
+        self.set_font("Helvetica", "", 8)
+        self.set_fill_color(245, 245, 245)
+        self.set_text_color(20, 20, 20)
+        self.multi_cell(0, 5, text, fill=True)
+        self.ln(3)
+
+
+SECTIONS = [
+    (
+        "Mapa del repositorio",
+        [
+            (
+                "Estructura raiz",
+                "POS SERVICE/\n"
+                "  Config/           - YAML de configuracion centralizada\n"
+                "  ms/               - Backend dockerizado (microservicios)\n"
+                "  pos-frontend/     - Frontend Angular 20\n"
+                "  docs/             - Documentacion y scripts PDF\n"
+                "  README.md         - Guia de instalacion Docker",
+            ),
+            (
+                "Backend (ms/)",
+                "api-gateway/      - Spring Cloud Gateway, puerto 4040\n"
+                "registry-server/  - Netflix Eureka, puerto 8761\n"
+                "config-server/    - Spring Cloud Config\n"
+                "ms-auth/          - Autenticacion JWT\n"
+                "pos-service/      - Nucleo POS (ventas, caja, catalogo)\n"
+                "ms-clientes/      - Microservicio de clientes\n"
+                "sql/              - Schema y seed BD pos_inventory\n"
+                "sql-clientes/     - Schema y seed BD clientes_db\n"
+                "docker-compose.yml - Orquestacion de contenedores\n"
+                "scripts/          - Utilidades auxiliares",
+            ),
+            (
+                "Frontend (pos-frontend/src/app/)",
+                "app.ts / app.config.ts / app.routes.ts  - Bootstrap y rutas\n"
+                "core/auth/          - AuthService, guard, interceptor\n"
+                "core/layout/        - MainLayoutComponent (sidenav + toolbar)\n"
+                "core/services/      - Servicios HTTP al backend\n"
+                "features/           - Pantallas por dominio (pos, orders, etc.)\n"
+                "shared/components/  - UI reutilizable (dialogs, thumbs)\n"
+                "shared/models/      - Interfaces TypeScript\n"
+                "shared/enums/       - OrderType, CashBoxStatus, MovementType",
+            ),
+        ],
+    ),
+    (
+        "Infraestructura backend",
+        [
+            (
+                "API Gateway",
+                "Archivo clave: ms/api-gateway/.../beans/GatewayBeans.java\n"
+                "Define tres rutas principales con load balancing via Eureka (lb://):\n"
+                "  /auth-server/auth/**     -> lb://auth-server\n"
+                "  /pos-venta-service/**    -> lb://pos-service\n"
+                "  /clientes-service/**     -> lb://ms-clientes\n"
+                "Perfil Docker: eureka-on. CORS en CorsConfig.java via CORS_ORIGIN.",
+            ),
+            (
+                "AuthFilter (Gateway)",
+                "Archivo: ms/api-gateway/.../filters/AuthFilter.java\n"
+                "Intercepta peticiones a rutas protegidas. Extrae Bearer token del header "
+                "Authorization y lo valida llamando POST /auth-server/auth/jwt en ms-auth. "
+                "Rutas publicas (sin filtro): login, register y el propio endpoint jwt.\n"
+                "Si el token es invalido o ausente, retorna 401 sin llegar al microservicio.",
+            ),
+            (
+                "Eureka Registry",
+                "Servicio de descubrimiento en puerto 8761. Cada microservicio se registra "
+                "al iniciar. El Gateway usa nombres de servicio (auth-server, pos-service, "
+                "ms-clientes) para resolver instancias disponibles.",
+            ),
+            (
+                "Config Server",
+                "Lee configuracion desde Git (Config/ms-auth.yml, pos-service.yml, etc.). "
+                "En Docker puede deshabilitarse (SPRING_CLOUD_CONFIG_ENABLED=false) y usar "
+                "YAML embebidos o variables de entorno del docker-compose.",
+            ),
+            (
+                "Bases de datos",
+                "pos_inventory (PostgreSQL 5433): tablas del POS y user_info de auth.\n"
+                "clientes_db (PostgreSQL 5434): tabla clientes.\n"
+                "Separacion permite escalar o respaldar clientes independientemente.",
+            ),
+        ],
+    ),
+    (
+        "ms-auth - Autenticacion JWT",
+        [
+            (
+                "Paquete y entidades",
+                "Paquete: pe.edu.upeu.ms_auth\n"
+                "UserEntity -> tabla user_info (id, username, password hash BCrypt)\n"
+                "UserRepository: acceso JPA\n"
+                "JwtHelper: generacion y validacion HMAC-SHA, expiracion ~1 hora\n"
+                "AuthServiceImpl: logica de login, register, validateToken",
+            ),
+            (
+                "AuthController - Endpoints",
+                "POST /auth/login     -> { accessToken } si credenciales validas\n"
+                "POST /auth/register  -> 201, crea usuario\n"
+                "POST /auth/jwt       -> valida token (header accessToken), usado por Gateway\n"
+                "GET  /auth/users     -> lista usuarios (requiere Bearer)",
+            ),
+            (
+                "Flujo interno de login",
+                "1. AuthController recibe username + password\n"
+                "2. AuthServiceImpl busca en UserRepository\n"
+                "3. BCrypt verifica hash de contrasena\n"
+                "4. JwtHelper genera token con subject=username\n"
+                "5. Frontend guarda token en sessionStorage\n"
+                "6. authInterceptor adjunta Bearer en cada HttpClient request",
+            ),
+            (
+                "Configuracion JWT",
+                "Secret en application.jwt.secret (min 32 chars).\n"
+                "Variable de entorno: APPLICATION_JWT_SECRET en ms/.env\n"
+                "Seed: admin/admin123 en ms/sql/data.sql",
+            ),
+        ],
+    ),
+    (
+        "pos-service - Nucleo del negocio",
+        [
+            (
+                "Paquete y capas",
+                "Paquete: pe.edu.upeu.pos_service\n"
+                "Capas classicas Spring:\n"
+                "  controllers/  - REST endpoints (@RestController)\n"
+                "  services/     - Logica de negocio (@Service)\n"
+                "  repository/   - JPA repositories\n"
+                "  entity/       - Entidades JPA\n"
+                "  dto/          - Objetos de transferencia\n"
+                "  client/       - ClienteFeignClient (OpenFeign)",
+            ),
+            (
+                "Controladores principales",
+                "AccountController       -> /account (cuentas cajero)\n"
+                "CategoryController      -> /category\n"
+                "ProductController       -> /product (+ search, by category)\n"
+                "ProductImageController  -> /product-image (multipart)\n"
+                "CategoryImageController -> /category-image (multipart)\n"
+                "OrderController         -> /order (+ reportes, by cash-box)\n"
+                "OrderDetailController   -> /order-detail\n"
+                "GeneralCashBoxController -> /cash-box (open, close, get open)\n"
+                "CashMovementController  -> /cash-movement",
+            ),
+            (
+                "OrderServiceImpl - Ventas",
+                "Archivo: services/OrderServiceImpl.java\n"
+                "Responsabilidades:\n"
+                "  - Verificar que exista caja OPEN antes de crear orden\n"
+                "  - Obtener numero secuencial via findMaxOrderNumberByCashBox\n"
+                "  - Llamar ClienteFeignClient para datos del cliente\n"
+                "  - Si Feign falla, usar cliente id=1 (Clientes Varios)\n"
+                "  - Copiar customer_name y customer_document a la orden (snapshot)\n"
+                "  - Por cada detail: leer precio del Product, calcular subtotal\n"
+                "  - Sumar total de la orden y persistir Order + OrderDetails",
+            ),
+            (
+                "GeneralCashBoxServiceImpl - Caja",
+                "  - open(): valida que no haya otra caja OPEN, crea GeneralCashBox\n"
+                "  - close(): calcula saldo_final = inicial + ventas + ingresos - egresos\n"
+                "  - getOpen(): retorna la caja activa o null",
+            ),
+            (
+                "CashMovementServiceImpl",
+                "  - create(): solo si caja asociada esta OPEN\n"
+                "  - Tipos: MovementType.INCOME o MovementType.EXPENSE",
+            ),
+            (
+                "Modelo de datos (pos_inventory)",
+                "account           - Cajeros (email unico)\n"
+                "category          - Categorias de productos\n"
+                "imagen_cat        - Imagenes de categoria (BYTEA)\n"
+                "product           - Productos (precio, category_id, imagen)\n"
+                "product_image     - Catalogo imagenes producto (BYTEA)\n"
+                "general_cash_box  - Sesiones caja (OPEN/CLOSED, saldos)\n"
+                "pos_order         - Ventas (tipo, cliente snapshot, total, numero)\n"
+                "pos_order_detail  - Lineas de venta (product, qty, precio, subtotal)\n"
+                "cash_movement     - Ingresos/egresos manuales\n"
+                "user_info         - Usuarios JWT (ms-auth)",
+            ),
+            (
+                "Enums de dominio",
+                "CashBoxStatus: OPEN, CLOSED\n"
+                "MovementType: INCOME, EXPENSE\n"
+                "OrderType: SALE, CREDIT, COURTESY, DAMAGED",
+            ),
+        ],
+    ),
+    (
+        "ms-clientes e integracion Feign",
+        [
+            (
+                "ms-clientes",
+                "Paquete: pe.edu.upeu.ms_clientes\n"
+                "BD propia: clientes_db (PostgreSQL 5434)\n"
+                "Entidad Cliente: nombre_completo, tipo_documento, numero_documento, "
+                "direccion, correo\n"
+                "ClienteController en /api/clientes",
+            ),
+            (
+                "Endpoints de clientes",
+                "GET  /api/clientes                    - Listar todos\n"
+                "GET  /api/clientes/{id}               - Por ID\n"
+                "POST /api/clientes                    - Crear\n"
+                "GET  /api/clientes/documento/{numero} - Por DNI/RUC\n"
+                "GET  /api/clientes/buscar?nombre=     - Busqueda parcial",
+            ),
+            (
+                "ClienteFeignClient",
+                "Archivo: pos-service/client/ClienteFeignClient.java\n"
+                "Interface @FeignClient apuntando a ms-clientes via Eureka.\n"
+                "OrderServiceImpl lo usa en create() para obtener nombre y documento.\n"
+                "Patron de resiliencia: try/catch o fallback a cliente id=1 si el servicio "
+                "de clientes no responde. Esto evita bloquear ventas por fallo de red.",
+            ),
+            (
+                "Por que microservicio separado",
+                "Separacion de dominios: clientes puede reutilizarse por otros sistemas.\n"
+                "BD independiente: migraciones y backups separados.\n"
+                "Escalabilidad: ms-clientes puede escalar sin afectar pos-service.\n"
+                "Trade-off: latencia extra en cada venta (llamada HTTP sincronica).",
+            ),
+        ],
+    ),
+    (
+        "Frontend Angular - Arquitectura interna",
+        [
+            (
+                "Bootstrap y configuracion",
+                "main.ts -> bootstrapApplication(App, appConfig)\n"
+                "app.config.ts provee:\n"
+                "  provideRouter(routes)\n"
+                "  provideHttpClient(withInterceptors([authInterceptor]))\n"
+                "  provideAnimationsAsync()\n"
+                "App component: solo <router-outlet /> (shell minimo)",
+            ),
+            (
+                "Rutas y lazy loading",
+                "app.routes.ts define rutas publicas (/login, /register) y layout protegido.\n"
+                "MainLayoutComponent envuelve rutas hijas con authGuard.\n"
+                "Cada feature usa loadComponent para cargar bajo demanda:\n"
+                "  /dashboard, /pos, /orders, /cash-box, /cash-movements,\n"
+                "  /products, /categories, /clients, /accounts, /reports\n"
+                "No hay NgModules: todo es standalone: true.",
+            ),
+            (
+                "Environment",
+                "environment.ts:\n"
+                "  apiUrl: 'http://localhost:4040'\n"
+                "  posPrefix: '/pos-venta-service'\n"
+                "  clientesPrefix: '/clientes-service'\n"
+                "  authPrefix: '/auth-server/auth'\n"
+                "Todos los servicios construyen URLs como apiUrl + prefix + endpoint.",
+            ),
+            (
+                "Capa core/auth",
+                "AuthService: login, register, logout, getToken, isAuthenticated\n"
+                "  Token y username en sessionStorage\n"
+                "auth.guard.ts: CanActivateFn, redirige a /login si !isAuthenticated\n"
+                "auth.interceptor.ts: HttpInterceptorFn\n"
+                "  - Adjunta Bearer excepto en login/register\n"
+                "  - En 401: logout() + navigate('/login')",
+            ),
+            (
+                "Capa core/services",
+                "Un servicio por recurso REST, inyectable con inject():\n"
+                "  ProductService, CategoryService, OrderService, OrderDetailService\n"
+                "  CashBoxService, CashMovementService, AccountService\n"
+                "  ProductImageService, CategoryImageService, ClienteService\n"
+                "Patron: metodos retornan Observable<T>, componentes suscriben o usan async pipe.",
+            ),
+            (
+                "CashBoxStateService - Estado compartido",
+                "Archivo: core/services/cash-box-state.service.ts\n"
+                "Usa BehaviorSubject<GeneralCashBox | null>.\n"
+                "Metodos: setOpenCashBox, clearOpenCashBox, openCashBox$, hasOpenCashBox.\n"
+                "Consumidores:\n"
+                "  MainLayoutComponent - banner si no hay caja\n"
+                "  PosComponent - bloquea venta\n"
+                "  OrdersComponent - filtra por caja abierta\n"
+                "  CashMovementsComponent - requiere caja activa\n"
+                "  CashBoxComponent - actualiza al abrir/cerrar",
+            ),
+            (
+                "Signals vs RxJS",
+                "Componentes modernos usan signal() para estado local (carrito, listas, loading).\n"
+                "RxJS se usa en servicios HTTP (Observable) y CashBoxStateService (Subject).\n"
+                "Patron hibrido: subscribe en ngOnInit -> actualiza signals -> template reactivo.",
+            ),
+        ],
+    ),
+    (
+        "Flujos internos detallados",
+        [
+            (
+                "Flujo completo de una venta",
+                "1. Usuario abre caja en CashBoxComponent\n"
+                "   -> CashBoxService.open({ accountId, saldoInicial })\n"
+                "   -> CashBoxStateService.setOpenCashBox(response)\n"
+                "2. Usuario navega a PosComponent\n"
+                "   -> CategoryService.getAll(), ProductService.getAll()\n"
+                "   -> ClienteService.getAll() para selector\n"
+                "3. Usuario agrega productos al carrito (estado local en signals)\n"
+                "4. Usuario confirma venta\n"
+                "   -> Valida hasOpenCashBox() y carrito no vacio\n"
+                "   -> OrderService.create({ cashBoxId, clienteId, orderType, details[] })\n"
+                "5. authInterceptor agrega Bearer token\n"
+                "6. Gateway AuthFilter valida JWT con ms-auth\n"
+                "7. OrderController -> OrderServiceImpl.create()\n"
+                "   -> Valida caja OPEN en BD\n"
+                "   -> Feign a ms-clientes por clienteId\n"
+                "   -> Calcula precios desde Product repository\n"
+                "   -> Persiste Order + OrderDetails\n"
+                "8. Respuesta con id, orderNumber, total\n"
+                "9. PosComponent vacia carrito, muestra SnackBar de exito",
+            ),
+            (
+                "Flujo de apertura y cierre de caja",
+                "Apertura:\n"
+                "  CashBoxComponent -> AccountService.getAll() (cuentas cajero)\n"
+                "  -> Usuario elige cuenta + saldo inicial\n"
+                "  -> CashBoxService.open() -> GeneralCashBoxServiceImpl\n"
+                "  -> Valida no hay otra OPEN -> INSERT general_cash_box\n"
+                "  -> CashBoxStateService.setOpenCashBox()\n"
+                "Cierre:\n"
+                "  CashBoxService.close(id) -> GeneralCashBoxServiceImpl\n"
+                "  -> Suma ventas de pos_order para esa caja\n"
+                "  -> Suma movimientos INCOME/EXPENSE\n"
+                "  -> Calcula saldo_final -> UPDATE status=CLOSED\n"
+                "  -> CashBoxStateService.clearOpenCashBox()",
+            ),
+            (
+                "Flujo de imagenes",
+                "Upload (administracion):\n"
+                "  ImagePickerComponent -> ProductImageService.upload(file)\n"
+                "  -> POST multipart /product-image\n"
+                "  -> ProductImageServiceImpl guarda bytes en BYTEA\n"
+                "Display (thumbs):\n"
+                "  ProductImageThumbComponent recibe imageId\n"
+                "  -> ProductImageService.getBlobUrl(id)\n"
+                "  -> GET /product-image/{id} con Bearer (via interceptor)\n"
+                "  -> responseType: 'blob'\n"
+                "  -> URL.createObjectURL(blob) cacheado en Map<id, url>\n"
+                "Motivo del cache: <img src> no envia headers Authorization,\n"
+                "por eso se usa blob URL en lugar de URL directa al API.",
+            ),
+            (
+                "Flujo de autenticacion (secuencia)",
+                "LoginComponent -> AuthService.login(credentials)\n"
+                "  -> POST /auth-server/auth/login (sin Bearer)\n"
+                "  -> sessionStorage.setItem('token', accessToken)\n"
+                "  -> router.navigate(['/dashboard'])\n"
+                "Peticion protegida:\n"
+                "  HttpClient -> authInterceptor -> agrega Bearer\n"
+                "  -> Gateway AuthFilter -> POST /auth/jwt valida\n"
+                "  -> forward a microservicio -> respuesta\n"
+                "Token expirado:\n"
+                "  Backend/Gateway 401 -> interceptor logout -> /login",
+            ),
+        ],
+    ),
+    (
+        "Componentes frontend por pantalla",
+        [
+            (
+                "Tabla de pantallas",
+                "/login       LoginComponent          AuthService\n"
+                "/register    RegisterComponent       AuthService\n"
+                "/dashboard   DashboardComponent      CashBoxService, OrderService\n"
+                "/pos         PosComponent            Category, Product, Order, Cliente, CashBoxState\n"
+                "               + CategoryImageThumb, ProductImageThumb\n"
+                "/orders      OrdersComponent         OrderService, OrderDetailService\n"
+                "               + OrderDetailDialog, ConfirmDialog\n"
+                "/cash-box    CashBoxComponent        CashBoxService, AccountService, CashBoxState\n"
+                "/cash-movements CashMovementsComponent CashMovementService, CashBoxState\n"
+                "/products    ProductsComponent       ProductService, ProductImageService\n"
+                "               + ProductFormDialog, ImagePicker, ConfirmDialog\n"
+                "/categories  CategoriesComponent     CategoryService, CategoryImageService\n"
+                "               + CategoryFormDialog, CategoryImagePicker\n"
+                "/clients     ClientsComponent        ClienteService\n"
+                "               + ClientFormDialog\n"
+                "/accounts    AccountsComponent       AuthService.getRegisteredUsers()\n"
+                "/reports     ReportsComponent        OrderService (report list + total)",
+            ),
+            (
+                "Componentes compartidos (shared/)",
+                "PageHeaderComponent - titulo, subtitulo, slot de acciones\n"
+                "ConfirmDialogComponent - confirmacion generica (MatDialog)\n"
+                "ProductImageThumbComponent - miniatura blob de producto\n"
+                "CategoryImageThumbComponent - miniatura blob de categoria\n"
+                "ProductFormDialogComponent - formulario crear/editar producto\n"
+                "CategoryFormDialogComponent - formulario crear/editar categoria\n"
+                "ClientFormDialogComponent - formulario crear cliente\n"
+                "OrderDetailDialogComponent - detalle de lineas de orden\n"
+                "ImagePickerComponent / CategoryImagePickerComponent - galeria y upload",
+            ),
+            (
+                "Distincion user_info vs account",
+                "IMPORTANTE para no confundir conceptos:\n"
+                "user_info (ms-auth): usuarios que hacen login JWT. Pantalla /accounts los lista.\n"
+                "account (pos-service): operadores de caja vinculados a general_cash_box.\n"
+                "  Se gestionan via AccountService, usados solo al abrir caja.\n"
+                "Un mismo operador humano podria tener login JWT y cuenta POS separadas.",
+            ),
+            (
+                "MainLayoutComponent",
+                "core/layout/main-layout.component.ts\n"
+                "MatSidenav con links a todas las rutas.\n"
+                "Toolbar con username (AuthService) y boton logout.\n"
+                "Banner de advertencia si CashBoxStateService indica sin caja abierta.\n"
+                "Router-outlet para contenido de features.",
+            ),
+        ],
+    ),
+    (
+        "Conceptos clave para aprendizaje",
+        [
+            (
+                "Snapshot de cliente vs referencia por ID",
+                "pos_order guarda customer_name y customer_document copiados al vender.\n"
+                "Ventaja: el historial de ventas no cambia si el cliente actualiza sus datos.\n"
+                "Desventaja: datos duplicados; no hay FK en BD hacia clientes_db (otro servicio).",
+            ),
+            (
+                "Por que el interceptor excluye login/register",
+                "Esas rutas son publicas en el Gateway. Enviar un token viego o invalido "
+                "podria causar rechazos innecesarios. El interceptor detecta la URL y no "
+                "agrega Authorization header.",
+            ),
+            (
+                "Gateway como unico punto de entrada",
+                "El frontend nunca llama directamente a puertos 8082/8083/3030.\n"
+                "Beneficios: CORS centralizado, validacion JWT unica, ocultamiento de "
+                "topologia interna, posibilidad de rate limiting futuro.",
+            ),
+            (
+                "OpenFeign vs HttpClient frontend",
+                "Feign (backend): comunicacion sincronica entre microservicios Java.\n"
+                "HttpClient (frontend): comunicacion con Gateway desde Angular.\n"
+                "Ambos son clientes HTTP pero en capas diferentes de la arquitectura.",
+            ),
+            (
+                "Standalone components en Angular 20",
+                "Sin AppModule: cada componente declara sus imports (Material, Common, etc.).\n"
+                "loadComponent en rutas reemplaza loadChildren de modulos.\n"
+                "inject() reemplaza constructor injection en muchos casos.\n"
+                "signals() para estado reactivo sin NgRx para este tamano de app.",
+            ),
+            (
+                "Docker Compose y seeds",
+                "Al levantar contenedores, scripts SQL en sql/ y sql-clientes/ inicializan "
+                "schema y datos de prueba (admin, categorias, productos, cliente varios).\n"
+                "Healthchecks en docker-compose esperan que PostgreSQL este listo antes "
+                "de iniciar microservicios.",
+            ),
+        ],
+    ),
+    (
+        "Referencias de archivos clave",
+        [
+            (
+                "Backend",
+                "ms/docker-compose.yml\n"
+                "ms/sql/create_schema.sql\n"
+                "ms/sql/data.sql\n"
+                "ms/api-gateway/.../beans/GatewayBeans.java\n"
+                "ms/api-gateway/.../filters/AuthFilter.java\n"
+                "ms/ms-auth/.../controllers/AuthController.java\n"
+                "ms/ms-auth/.../helpers/JwtHelper.java\n"
+                "ms/pos-service/.../services/OrderServiceImpl.java\n"
+                "ms/pos-service/.../services/GeneralCashBoxServiceImpl.java\n"
+                "ms/pos-service/.../client/ClienteFeignClient.java\n"
+                "ms/ms-clientes/.../controller/ClienteController.java",
+            ),
+            (
+                "Frontend",
+                "pos-frontend/src/app/app.routes.ts\n"
+                "pos-frontend/src/app/app.config.ts\n"
+                "pos-frontend/src/environments/environment.ts\n"
+                "pos-frontend/src/app/core/auth/auth.service.ts\n"
+                "pos-frontend/src/app/core/auth/auth.guard.ts\n"
+                "pos-frontend/src/app/core/auth/auth.interceptor.ts\n"
+                "pos-frontend/src/app/core/services/cash-box-state.service.ts\n"
+                "pos-frontend/src/app/core/layout/main-layout.component.ts\n"
+                "pos-frontend/src/app/features/pos/pos.component.ts\n"
+                "pos-frontend/src/app/features/cash-box/cash-box.component.ts",
+            ),
+            (
+                "Como profundizar",
+                "1. Levantar stack con docker compose up en ms/\n"
+                "2. Abrir Swagger en pos-service (si expuesto) o usar Postman contra :4040\n"
+                "3. Ejecutar frontend con npm start en pos-frontend/\n"
+                "4. Poner breakpoints en OrderServiceImpl y PosComponent\n"
+                "5. Trazar una venta completa con DevTools Network tab\n"
+                "6. Revisar logs de Gateway para ver validacion JWT en accion",
+            ),
+        ],
+    ),
+]
+
+
+def build_pdf():
+    pdf = PosPdf()
+    pdf.alias_nb_pages()
+
+    pdf.cover_page(
+        "POS SERVICE",
+        "Guia Interna de Componentes y Flujos",
+        "Version 1.0 - Julio 2026 - Uso personal / aprendizaje",
+    )
+
+    pdf.add_page()
+    pdf.set_font("Helvetica", "B", 14)
+    pdf.set_text_color(30, 60, 120)
+    pdf.cell(0, 10, "Indice", new_x="LMARGIN", new_y="NEXT")
+    pdf.ln(4)
+    pdf.set_font("Helvetica", "", 10)
+    pdf.set_text_color(30, 30, 30)
+    for i, (title, _) in enumerate(SECTIONS, 1):
+        pdf.cell(0, 7, f"  {i}. {title}", new_x="LMARGIN", new_y="NEXT")
+
+    for i, (title, subsections) in enumerate(SECTIONS, 1):
+        pdf.chapter_title(str(i), title)
+        for sub_title, sub_body in subsections:
+            pdf.section_title(sub_title)
+            pdf.body(sub_body)
+
+    output_path = Path(__file__).parent / OUTPUT_NAME
+    pdf.output(str(output_path))
+    print(f"PDF generado: {output_path}")
+
+
+if __name__ == "__main__":
+    build_pdf()

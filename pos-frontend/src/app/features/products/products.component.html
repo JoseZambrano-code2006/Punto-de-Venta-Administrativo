@@ -1,0 +1,49 @@
+<app-page-header title="Productos">
+  <button mat-flat-button color="primary" (click)="openForm()">Nuevo producto</button>
+</app-page-header>
+
+<div class="filters">
+  <mat-form-field appearance="outline" class="filter">
+    <mat-label>Buscar</mat-label>
+    <input matInput [formControl]="searchControl" placeholder="Nombre..." />
+  </mat-form-field>
+  <mat-form-field appearance="outline" class="filter">
+    <mat-label>Categoría</mat-label>
+    <mat-select [formControl]="categoryFilter">
+      <mat-option [value]="null">Todas</mat-option>
+      @for (cat of categories(); track cat.id) {
+        <mat-option [value]="cat.id">{{ cat.name }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+</div>
+
+<table mat-table [dataSource]="products()" class="mat-elevation-z1 full-width">
+  <ng-container matColumnDef="image">
+    <th mat-header-cell *matHeaderCellDef class="image-col">Imagen</th>
+    <td mat-cell *matCellDef="let row" class="image-col">
+      <app-product-image-thumb [imageId]="row.image?.id ?? null" size="sm" [alt]="row.name" />
+    </td>
+  </ng-container>
+  <ng-container matColumnDef="name">
+    <th mat-header-cell *matHeaderCellDef>Nombre</th>
+    <td mat-cell *matCellDef="let row">{{ row.name }}</td>
+  </ng-container>
+  <ng-container matColumnDef="category">
+    <th mat-header-cell *matHeaderCellDef>Categoría</th>
+    <td mat-cell *matCellDef="let row">{{ categoryName(row) }}</td>
+  </ng-container>
+  <ng-container matColumnDef="price">
+    <th mat-header-cell *matHeaderCellDef>Precio</th>
+    <td mat-cell *matCellDef="let row">S/ {{ row.price | number:'1.2-2' }}</td>
+  </ng-container>
+  <ng-container matColumnDef="actions">
+    <th mat-header-cell *matHeaderCellDef>Acciones</th>
+    <td mat-cell *matCellDef="let row">
+      <button mat-icon-button (click)="openForm(row)"><mat-icon>edit</mat-icon></button>
+      <button mat-icon-button color="warn" (click)="delete(row)"><mat-icon>delete</mat-icon></button>
+    </td>
+  </ng-container>
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+</table>

@@ -1,0 +1,150 @@
+services:
+  db-inventory:
+    image: postgres:16.1
+    container_name: pos-inventory-db
+    restart: unless-stopped
+    volumes:
+      - ./sql/create_schema.sql:/docker-entrypoint-initdb.d/01_create_schema.sql
+      - ./sql/data.sql:/docker-entrypoint-initdb.d/02_data.sql
+    environment:
+      POSTGRES_DB: pos_inventory
+      POSTGRES_USER: servicepos
+      POSTGRES_PASSWORD: admin123
+    ports:
+      - '5433:5432'
+    networks:
+      - pos-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U servicepos -d pos_inventory']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  db-clientes:
+    image: postgres:15
+    container_name: pos-clientes-db
+    restart: unless-stopped
+    volumes:
+      - ./sql-clientes/data-clientes.sql:/docker-entrypoint-initdb.d/01_data.sql
+    environment:
+      POSTGRES_USER: clientes-db
+      POSTGRES_PASSWORD: clientes123
+      POSTGRES_DB: clientes_db
+    ports:
+      - '5434:5432'
+    networks:
+      - pos-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U clientes-db -d clientes_db']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  registry-server:
+    build: ./registry-server
+    container_name: pos-registry-server
+    restart: unless-stopped
+    ports:
+      - '8761:8761'
+    networks:
+      - pos-network
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:8761/actuator/health || wget -qO- http://localhost:8761/ >/dev/null 2>&1 || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  config-server:
+    build: ./config-server
+    container_name: pos-config-server
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      registry-server:
+        condition: service_started
+    networks:
+      - pos-network
+
+  ms-auth:
+    build: ./ms-auth
+    container_name: pos-ms-auth
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      SPRING_CLOUD_CONFIG_ENABLED: "false"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://registry-server:8761/eureka/
+    depends_on:
+      registry-server:
+        condition: service_started
+      config-server:
+        condition: service_started
+      db-inventory:
+        condition: service_healthy
+    networks:
+      - pos-network
+
+  pos-service:
+    build: ./pos-service
+    container_name: pos-service
+    restart: unless-stopped
+    environment:
+      SPRING_CLOUD_CONFIG_ENABLED: "false"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://registry-server:8761/eureka/
+    depends_on:
+      registry-server:
+        condition: service_started
+      config-server:
+        condition: service_started
+      db-inventory:
+        condition: service_healthy
+      ms-clientes:
+        condition: service_started
+    networks:
+      - pos-network
+
+  ms-clientes:
+    build: ./ms-clientes
+    container_name: pos-ms-clientes
+    restart: unless-stopped
+    environment:
+      SPRING_CLOUD_CONFIG_ENABLED: "false"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://registry-server:8761/eureka/
+    depends_on:
+      registry-server:
+        condition: service_started
+      config-server:
+        condition: service_started
+      db-clientes:
+        condition: service_healthy
+    networks:
+      - pos-network
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: pos-api-gateway
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: docker,eureka-on
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://registry-server:8761/eureka/
+    ports:
+      - '4040:4040'
+    depends_on:
+      registry-server:
+        condition: service_started
+      ms-auth:
+        condition: service_started
+      pos-service:
+        condition: service_started
+      ms-clientes:
+        condition: service_started
+    networks:
+      - pos-network
+
+networks:
+  pos-network:
+    driver: bridge

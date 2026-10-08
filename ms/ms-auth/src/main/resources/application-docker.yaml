@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://db-inventory:5432/pos_inventory
+    username: servicepos
+    password: admin123
+    driver-class-name: org.postgresql.Driver
+
+application:
+  jwt:
+    secret: ${APPLICATION_JWT_SECRET:12345678901234567890123456789012}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://registry-server:8761/eureka/
+  instance:
+    prefer-ip-address: true

@@ -1,0 +1,57 @@
+spring:
+  application:
+    name: pos-service
+
+  profiles:
+    default: default
+
+  # ATENCIÓN: Por ahora, pondremos las credenciales directas aquí para que puedas
+  # probar tu código de inmediato sin tener que ir a modificar el repositorio
+  # de tu Config Server. Luego puedes pasarlo a variables ${db...} si lo deseas.
+  datasource:
+    url: jdbc:postgresql://localhost:5433/pos_inventory
+    username: servicepos
+    password: admin123
+    hikari:
+      maximum-pool-size: '5'
+      connection-timeout: '20000'
+    initialization-mode: always
+
+  jpa:
+    show-sql: 'true'
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: 'true'
+
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 2MB
+
+logging:
+  level:
+    org:
+      hibernate:
+        type:
+          descriptor:
+            sql:
+              BasicBinder: TRACE
+        SQL: DEBUG
+
+server:
+  servlet:
+    # Esta es la ruta base para todos los endpoints de este microservicio
+    context-path: /pos-venta-service
+
+  # Cambiamos el puerto a 8082 (o puedes usar '0' para que sea dinámico).
+  # Si usas el 8081, chocará si intentas levantar el university-crud al mismo tiempo.
+  port: 8082
+
+eureka:
+  instance:
+    instance-id: "${spring.application.name}:${random.value}"
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/

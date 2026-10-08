@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://db-inventory:5432/pos_inventory
+    username: servicepos
+    password: admin123
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 20000

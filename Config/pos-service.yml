@@ -1,0 +1,6 @@
+db:
+  url: jdbc:postgresql://db-inventory:5432/pos_inventory
+  username: servicepos
+  password: admin123
+  maximum-pool-size: 5
+  connection-timeout: 20000

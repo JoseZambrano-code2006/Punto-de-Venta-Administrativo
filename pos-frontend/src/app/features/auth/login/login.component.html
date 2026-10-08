@@ -1,0 +1,34 @@
+<div class="login-page">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>POS QSR</mat-card-title>
+      <mat-card-subtitle>Iniciar sesión</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Usuario</mat-label>
+          <input matInput formControlName="username" autocomplete="username" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Contraseña</mat-label>
+          <input matInput type="password" formControlName="password" autocomplete="current-password" />
+        </mat-form-field>
+        @if (error()) {
+          <p class="error">{{ error() }}</p>
+        }
+        <button mat-flat-button color="primary" class="full-width" type="submit" [disabled]="loading()">
+          @if (loading()) {
+            <mat-spinner diameter="20" />
+          } @else {
+            Ingresar
+          }
+        </button>
+      </form>
+      <p class="switch-link">
+        ¿No tienes cuenta?
+        <a routerLink="/register">Crear cuenta</a>
+      </p>
+    </mat-card-content>
+  </mat-card>
+</div>

@@ -1,0 +1,11 @@
+spring:
+  cloud:
+    config:
+      enabled: false
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://registry-server:8761/eureka/
+  instance:
+    prefer-ip-address: true

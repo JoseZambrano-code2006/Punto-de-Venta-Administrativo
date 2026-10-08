@@ -1,0 +1,46 @@
+<app-page-header title="Dashboard" subtitle="Resumen del día" />
+
+<div class="cards">
+  <mat-card>
+    <mat-card-header>
+      <mat-icon mat-card-avatar>account_balance_wallet</mat-icon>
+      <mat-card-title>Estado de caja</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      @if (isOpen()) {
+        <p>Caja abierta — Saldo inicial: S/ {{ openCashBox()?.saldoInicial | number:'1.2-2' }}</p>
+      } @else {
+        <p>No hay caja abierta</p>
+      }
+    </mat-card-content>
+    <mat-card-actions>
+      <a mat-button routerLink="/cash-box">Gestionar caja</a>
+    </mat-card-actions>
+  </mat-card>
+
+  <mat-card>
+    <mat-card-header>
+      <mat-icon mat-card-avatar>payments</mat-icon>
+      <mat-card-title>Ventas de hoy</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <p class="total">S/ {{ todayTotal() | number:'1.2-2' }}</p>
+    </mat-card-content>
+    <mat-card-actions>
+      <a mat-button routerLink="/reports">Ver reportes</a>
+    </mat-card-actions>
+  </mat-card>
+
+  <mat-card>
+    <mat-card-header>
+      <mat-icon mat-card-avatar>point_of_sale</mat-icon>
+      <mat-card-title>Acceso rápido</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <p>Inicia una venta desde el punto de venta</p>
+    </mat-card-content>
+    <mat-card-actions>
+      <a mat-flat-button color="primary" routerLink="/pos">Ir al TPV</a>
+    </mat-card-actions>
+  </mat-card>
+</div>

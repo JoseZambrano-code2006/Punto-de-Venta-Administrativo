@@ -1,0 +1,27 @@
+<app-page-header title="Categorías">
+  <button mat-flat-button color="primary" (click)="openForm()">
+    Nueva categoría
+  </button>
+</app-page-header>
+
+<table mat-table [dataSource]="categories()" class="mat-elevation-z1 full-width">
+  <ng-container matColumnDef="image">
+    <th mat-header-cell *matHeaderCellDef class="image-col">Imagen</th>
+    <td mat-cell *matCellDef="let row" class="image-col">
+      <app-category-image-thumb [imageId]="row.imagenCat?.id ?? null" size="sm" [alt]="row.name" />
+    </td>
+  </ng-container>
+  <ng-container matColumnDef="name">
+    <th mat-header-cell *matHeaderCellDef>Nombre</th>
+    <td mat-cell *matCellDef="let row">{{ row.name }}</td>
+  </ng-container>
+  <ng-container matColumnDef="actions">
+    <th mat-header-cell *matHeaderCellDef>Acciones</th>
+    <td mat-cell *matCellDef="let row">
+      <button mat-icon-button (click)="openForm(row)"><mat-icon>edit</mat-icon></button>
+      <button mat-icon-button color="warn" (click)="delete(row)"><mat-icon>delete</mat-icon></button>
+    </td>
+  </ng-container>
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+</table>

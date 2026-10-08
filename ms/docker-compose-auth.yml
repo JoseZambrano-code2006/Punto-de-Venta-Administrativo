@@ -1,0 +1,20 @@
+# OBSOLETO: ms-auth usa PostgreSQL (db-inventory), no MySQL.
+# Usar docker-compose.yml en su lugar.
+version: '3.8'
+services:
+  mysql-auth:
+    image: mysql:8.0
+    container_name: mysql_auth_db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: auth_db
+      MYSQL_USER: auth_user
+      MYSQL_PASSWORD: auth_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_auth_data:/var/lib/mysql
+    restart: always
+
+volumes:
+  mysql_auth_data:

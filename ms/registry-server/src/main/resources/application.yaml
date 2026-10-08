@@ -1,0 +1,11 @@
+spring:  #Configuración principal de Spring Boot
+  application:
+    name: registry-server  #Nombre de la aplicación (así se registra en Eureka)
+
+server:
+  port: 8761 #Puerto donde se ejecuta el servidor (accedes en http://localhost:8761)
+
+eureka:
+  client:
+    register-with-eureka: false  #no se registra a sí mismo
+    fetch-registry: false  #Este servidor NO necesita obtener registros de otros servicios
