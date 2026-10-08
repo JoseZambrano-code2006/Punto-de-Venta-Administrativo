@@ -1,6 +1,6 @@
 ================================================================================
   POS SERVICE — Guía de instalación (Docker + Frontend opcional)
-  Repositorio: https://github.com/dhamsilver/pos-service.git
+  Repositorio:[ https://github.com/dhamsilver/pos-service.git](https://github.com/JoseZambrano-code2006/Pos-Service-business-manager-Punto-de-Venta-Administrativo-.git)
   Rama recomendada: JorgeCabrera-docker
 ================================================================================
 
@@ -31,12 +31,12 @@
 --------------------------------------------------------------------------------
 
   Windows (PowerShell):
-    git clone https://github.com/dhamsilver/pos-service.git
+    git clone (https://github.com/JoseZambrano-code2006/Pos-Service-business-manager-Punto-de-Venta-Administrativo-.git)
     cd pos-service
     git checkout JorgeCabrera-docker
 
   Linux / macOS:
-    git clone https://github.com/dhamsilver/pos-service.git
+    git clone (https://github.com/JoseZambrano-code2006/Pos-Service-business-manager-Punto-de-Venta-Administrativo-.git)
     cd pos-service
     git checkout JorgeCabrera-docker
 
@@ -52,7 +52,7 @@
 
   1. Entra a GitHub → Settings → Developer settings → Personal access tokens
   2. Genera un token clásico o fine-grained con acceso de lectura al repo
-     dhamsilver/pos-service
+     JoseZambrano-code2006/Pos-Service-business-manager-Punto-de-Venta-Administrativo
   3. Copia el token (empieza por ghp_...) — no lo compartas ni lo subas a Git
 
   IMPORTANTE:
@@ -73,7 +73,7 @@
 
   Edita ms/.env y completa:
 
-    CONFIG_GIT_URI=https://github.com/dhamsilver/pos-service.git
+    CONFIG_GIT_URI=https://github.com/JoseZambrano-code2006/Pos-Service-business-manager-Punto-de-Venta-Administrativo.git
     CONFIG_GIT_USERNAME=tu_usuario_github
     CONFIG_GIT_PASSWORD=ghp_tu_personal_access_token
     APPLICATION_JWT_SECRET=12345678901234567890123456789012
@@ -236,7 +236,7 @@
 11. RESUMEN RÁPIDO (COPIAR Y PEGAR)
 --------------------------------------------------------------------------------
 
-  git clone https://github.com/dhamsilver/pos-service.git
+  git clone (https://github.com/dhamsilver/pos-service.git](https://github.com/JoseZambrano-code2006/Pos-Service-business-manager-Punto-de-Venta-Administrativo-.git)
   cd pos-service
   git checkout JorgeCabrera-docker
   cd ms
