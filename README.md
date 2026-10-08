@@ -1,6 +1,6 @@
 ================================================================================
   POS SERVICE — Guía de instalación (Docker + Frontend opcional)
-  Repositorio:[ https://github.com/dhamsilver/pos-service.git](https://github.com/JoseZambrano-code2006/Pos-Service-business-manager-Punto-de-Venta-Administrativo-.git)
+  Repositorio: https://github.com/JoseZambrano-code2006/Punto-de-Venta-Administrativo.git
   Rama recomendada: JorgeCabrera-docker
 ================================================================================
 
@@ -31,12 +31,12 @@
 --------------------------------------------------------------------------------
 
   Windows (PowerShell):
-    git clone (https://github.com/JoseZambrano-code2006/Pos-Service-business-manager-Punto-de-Venta-Administrativo-.git)
+    git clone https://github.com/JoseZambrano-code2006/Punto-de-Venta-Administrativo.git
     cd pos-service
     git checkout JorgeCabrera-docker
 
   Linux / macOS:
-    git clone (https://github.com/JoseZambrano-code2006/Pos-Service-business-manager-Punto-de-Venta-Administrativo-.git)
+    git clone https://github.com/JoseZambrano-code2006/Punto-de-Venta-Administrativo.git
     cd pos-service
     git checkout JorgeCabrera-docker
 
@@ -73,7 +73,7 @@
 
   Edita ms/.env y completa:
 
-    CONFIG_GIT_URI=https://github.com/JoseZambrano-code2006/Pos-Service-business-manager-Punto-de-Venta-Administrativo.git
+    CONFIG_GIT_URI=https://github.com/JoseZambrano-code2006/Punto-de-Venta-Administrativo.git
     CONFIG_GIT_USERNAME=tu_usuario_github
     CONFIG_GIT_PASSWORD=ghp_tu_personal_access_token
     APPLICATION_JWT_SECRET=12345678901234567890123456789012
@@ -236,7 +236,7 @@
 11. RESUMEN RÁPIDO (COPIAR Y PEGAR)
 --------------------------------------------------------------------------------
 
-  git clone (https://github.com/dhamsilver/pos-service.git](https://github.com/JoseZambrano-code2006/Pos-Service-business-manager-Punto-de-Venta-Administrativo-.git)
+  git clone https://github.com/JoseZambrano-code2006/Punto-de-Venta-Administrativo.git
   cd pos-service
   git checkout JorgeCabrera-docker
   cd ms
